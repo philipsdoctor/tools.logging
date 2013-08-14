@@ -274,4 +274,7 @@
    obtain an impl/Logger. Defaults to the value returned from impl/find-factory."
   :dynamic true}
   *logger-factory*
-  (impl/find-factory))
+  (do
+    (impl/reinitialize-factory!)
+    (impl/find-factory)))
+

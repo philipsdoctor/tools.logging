@@ -199,6 +199,25 @@
              (java.util.logging.Logger/getLogger (str logger-ns#))))))
     (catch Exception e nil)))
 
+(defn reinitialize-factory!
+   "Will reinitialize the logback logger to allow use of custom loggers.  When called without args will check env variable LOGBACK_CONFIG, else will use specified path"
+   ([]
+   (let [config-location (System/getenv "LOGBACK_CONFIG")]
+     (if-not (nil? config-location)
+           (reinitialize-factory! config-location))))
+   ([config-location]
+   (try
+     (Class/forName "org.slf4j.LoggerFactory")
+     (Class/forName "ch.qos.logback.classic.joran.JoranConfigurator")
+     (eval `(do
+              (let [ctx# (org.slf4j.LoggerFactory/getILoggerFactory)
+                    config# (ch.qos.logback.classic.joran.JoranConfigurator.)]
+                  (.setContext config# ctx#) 
+                  (.doConfigure config# ~config-location)
+                )
+              ))
+   (catch Exception e nil))))
+
 (defn find-factory
   "Returns the first non-nil value from slf4j-factory, cl-factory,
    log4j-factory, and jul-factory."
